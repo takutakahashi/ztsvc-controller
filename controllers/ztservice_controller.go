@@ -20,14 +20,29 @@ type ZTServiceReconciler struct {
 
 // +kubebuilder:rbac:groups=zt.takutakahashi.dev,resources=ztservices,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=zt.takutakahashi.dev,resources=ztservices/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups="",resources=services,verbs=get;create;update;patch
 
 func (r *ZTServiceReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("ztservice", req.NamespacedName)
-
-	// your logic here
-
+	ctx := context.Background()
+	log := r.Log.WithValues("ztservice", req.NamespacedName)
+	// add finalizer
+	var zts *ztv1beta1.ZTService
+	if err := r.Get(ctx, req.NamespacedName, zts); err != nil {
+		return ctrl.Result{}, err
+	}
+	ztsAfter, err := r.reconcile(zts)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	log.Info("reconciled", "after", ztsAfter)
 	return ctrl.Result{}, nil
+}
+
+func (r *ZTServiceReconciler) reconcile(zts *ztv1beta1.ZTService) (*ztv1beta1.ZTService, error) {
+	var ztsAfter *ztv1beta1.ZTService
+	// create service if not
+	// inject iptables to daemons
+	return ztsAfter, nil
 }
 
 func (r *ZTServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {

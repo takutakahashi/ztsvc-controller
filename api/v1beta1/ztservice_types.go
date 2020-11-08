@@ -14,8 +14,8 @@ type ZTServiceSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of ZTService. Edit ZTService_types.go to remove/update
-	Service    *corev1.Service `json:"service,omitempty"`
-	ServiceRef string          `json:"serviceRef,omitempty"`
+	ServiceSpec *corev1.ServiceSpec `json:"serviceSpec,omitempty"`
+	ServiceRef  string              `json:"serviceRef,omitempty"`
 }
 
 // ZTServiceStatus defines the observed state of ZTService
