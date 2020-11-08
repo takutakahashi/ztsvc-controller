@@ -1,0 +1,24 @@
+# permissions for end users to edit ztservices.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ztservice-editor-role
+rules:
+- apiGroups:
+  - zt.takutakahashi.dev
+  resources:
+  - ztservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - zt.takutakahashi.dev
+  resources:
+  - ztservices/status
+  verbs:
+  - get

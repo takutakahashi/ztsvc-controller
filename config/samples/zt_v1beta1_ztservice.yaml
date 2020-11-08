@@ -1,0 +1,7 @@
+apiVersion: zt.takutakahashi.dev/v1beta1
+kind: ZTService
+metadata:
+  name: ztservice-sample
+spec:
+  # Add fields here
+  foo: bar
