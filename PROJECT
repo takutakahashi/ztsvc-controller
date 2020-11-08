@@ -1,3 +1,7 @@
 domain: takutakahashi.dev
 repo: github.com/takutakahashi/ztsvc-controller
+resources:
+- group: zt
+  kind: ZTService
+  version: v1beta1
 version: "2"
