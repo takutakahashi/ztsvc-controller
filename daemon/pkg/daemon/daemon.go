@@ -1,6 +1,15 @@
 package daemon
 
-type NetworkDaemon struct{}
+import (
+	"time"
+
+	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/node"
+	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/zerotier"
+)
+
+type NetworkDaemon struct {
+	config Config
+}
 
 type Config struct{}
 
@@ -17,5 +26,19 @@ func (d NetworkDaemon) Start() error {
 }
 
 func (d NetworkDaemon) start() error {
-	return nil
+	zt, err := zerotier.NewClient()
+	if err != nil {
+		return err
+	}
+	for {
+		n, err := node.Fetch()
+		if err != nil {
+			return err
+		}
+		err = zt.Ensure(n)
+		if err != nil {
+			return err
+		}
+		time.Sleep(10 * time.Second)
+	}
 }
