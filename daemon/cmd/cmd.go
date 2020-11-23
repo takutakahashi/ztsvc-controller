@@ -16,8 +16,8 @@ func main() {
 	app.Version = "0.0.1"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "config, c",
-			Usage: "config.yaml filepath",
+			Name:  "token, t",
+			Usage: "Zerotier API Token",
 		},
 	}
 	app.Action = action
@@ -25,12 +25,12 @@ func main() {
 }
 
 func action(c *cli.Context) error {
-	configPath := c.String("config")
-	if configPath == "" {
+	token := c.String("token")
+	if token == "" {
 		cli.ShowAppHelp(c)
 		return nil
 	}
-	config, err := daemon.LoadConfig(configPath)
+	config, err := daemon.NewConfig(token)
 	if err != nil {
 		log.Fatal(err)
 		return nil

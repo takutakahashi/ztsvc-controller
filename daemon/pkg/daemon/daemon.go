@@ -11,10 +11,12 @@ type NetworkDaemon struct {
 	config Config
 }
 
-type Config struct{}
+type Config struct {
+	token string
+}
 
-func LoadConfig(path string) (Config, error) {
-	return Config{}, nil
+func NewConfig(token string) (Config, error) {
+	return Config{token: token}, nil
 }
 
 func NewDaemon(c Config) (NetworkDaemon, error) {
@@ -26,7 +28,7 @@ func (d NetworkDaemon) Start() error {
 }
 
 func (d NetworkDaemon) start() error {
-	zt, err := zerotier.NewClient()
+	zt, err := zerotier.NewClient(d.config.token)
 	if err != nil {
 		return err
 	}
