@@ -25,6 +25,9 @@ func (r *ServiceReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = r.Log.WithValues("service", req.NamespacedName)
 
 	// your logic here
+	// add finalizer
+	// check annotation
+	// create ztservice
 
 	return ctrl.Result{}, nil
 }
