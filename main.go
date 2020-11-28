@@ -10,6 +10,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	corev1 "k8s.io/api/core/v1"
+
 	ztv1beta1 "github.com/takutakahashi/ztsvc-controller/api/v1beta1"
 	"github.com/takutakahashi/ztsvc-controller/controllers"
 	// +kubebuilder:scaffold:imports
@@ -24,6 +26,7 @@ func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
 
 	_ = ztv1beta1.AddToScheme(scheme)
+	_ = corev1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -56,6 +59,14 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ZTService")
+		os.Exit(1)
+	}
+	if err = (&controllers.ServiceReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Service"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Service")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
