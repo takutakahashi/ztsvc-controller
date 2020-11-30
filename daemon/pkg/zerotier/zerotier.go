@@ -3,6 +3,7 @@ package zerotier
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
@@ -60,7 +61,30 @@ func (zt Zerotier) updateMemberName(network, memberID, name string) error {
 	_, err = zt.post("/api/network/"+network+"/member/"+memberID, params)
 	return err
 }
-func (zt Zerotier) join(network string) error { return nil }
+func (zt Zerotier) join(network string) error {
+	_, err := zt.executable.exec(fmt.Sprintf("join %s", network))
+	return err
+}
+
+func (zt Zerotier) leave(network string) error {
+	_, err := zt.executable.exec(fmt.Sprintf("leave %s", network))
+	return err
+}
+
+func (zt Zerotier) authorize(network, node string) error {
+	type c struct {
+		Authorized bool `json:"authorized"`
+	}
+	p := struct {
+		Config c
+	}{Config: c{Authorized: true}}
+	params, err := json.Marshal(p)
+	if err != nil {
+		return err
+	}
+	_, err = zt.executable.req("POST", fmt.Sprintf("/network/%s/member/%s", network, node), params)
+	return err
+}
 func (zt Zerotier) getNodeID() (string, error) {
 	stdout, err := zt.executable.exec("info")
 	if err != nil {
@@ -68,7 +92,6 @@ func (zt Zerotier) getNodeID() (string, error) {
 	}
 	return strings.Split(string(stdout), " ")[2], nil
 }
-func (zt Zerotier) leave(network string) error { return nil }
 
 func (e ZTExecutable) exec(cmd string) ([]byte, error) {
 	return exec.Command("zerotier-cli", cmd).Output()
