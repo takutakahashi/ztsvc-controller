@@ -125,6 +125,7 @@ github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v0.0.0-20151208002404-e3a8ff8ce365/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
+github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/takutakahashi/container-api-gateway v0.0.0-20201020082214-7e3fe098ca6e h1:YBtC0nvibJrNxi9XZa+x4cOaqCoTIvjOudQ4tRjwhf8=
 github.com/takutakahashi/container-api-gateway v0.0.0-20201020082214-7e3fe098ca6e/go.mod h1:91alLGHGiBuUzP+fDgAVk4SEK5b0ly0R2TJlhYhYE0k=
