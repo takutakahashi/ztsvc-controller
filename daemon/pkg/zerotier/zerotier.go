@@ -6,20 +6,22 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/node"
 )
 
 type Zerotier struct {
-	config     Config
 	executable Executable
 }
 type Executable interface {
 	req(method, url string, params []byte) ([]byte, error)
 	exec(cmd string) ([]byte, error)
 }
-type ZTExecutable struct{}
+type ZTExecutable struct {
+	config Config
+}
 
 type Config struct {
 	Token    string
@@ -28,9 +30,11 @@ type Config struct {
 
 func NewClient(token string) (Zerotier, error) {
 	return Zerotier{
-		config: Config{
-			Token:    token,
-			Endpoint: "https://my.zerotier.com",
+		executable: ZTExecutable{
+			config: Config{
+				Token:    token,
+				Endpoint: "https://my.zerotier.com",
+			},
 		},
 	}, nil
 }
@@ -57,28 +61,28 @@ func (zt Zerotier) updateMemberName(network, memberID, name string) error {
 	return err
 }
 func (zt Zerotier) join(network string) error { return nil }
-func (zt Zerotier) info() (string, error) {
-	stdout, err := zt.exec("info")
+func (zt Zerotier) getNodeID() (string, error) {
+	stdout, err := zt.executable.exec("info")
 	if err != nil {
 		return "", err
 	}
-	return string(stdout), nil
+	return strings.Split(string(stdout), " ")[2], nil
 }
 func (zt Zerotier) leave(network string) error { return nil }
 
-func (zt Zerotier) exec(cmd string) ([]byte, error) {
+func (e ZTExecutable) exec(cmd string) ([]byte, error) {
 	return exec.Command("zerotier-cli", cmd).Output()
 }
 func (zt Zerotier) get(url string) ([]byte, error) {
-	return zt.req("GET", url, nil)
+	return zt.executable.req("GET", url, nil)
 }
 func (zt Zerotier) post(url string, params []byte) ([]byte, error) {
-	return zt.req("POST", url, params)
+	return zt.executable.req("POST", url, params)
 }
-func (zt Zerotier) req(method, url string, params []byte) ([]byte, error) {
+func (e ZTExecutable) req(method, url string, params []byte) ([]byte, error) {
 	client := &http.Client{}
 	client.Timeout = time.Second * 30
-	uri := zt.config.Endpoint + url
+	uri := e.config.Endpoint + url
 	var req *http.Request
 	var err error
 	if method == "POST" {
@@ -89,7 +93,7 @@ func (zt Zerotier) req(method, url string, params []byte) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	req.Header.Set("Authorization", "bearer "+zt.config.Token)
+	req.Header.Set("Authorization", "bearer "+e.config.Token)
 	req.Header.Set("Content-type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
