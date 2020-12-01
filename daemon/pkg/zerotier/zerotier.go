@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/labstack/gommon/log"
 )
 
 type Zerotier struct {
@@ -37,6 +39,7 @@ func NewClient(token, networkID, nodeName string) (Zerotier, error) {
 		NetworkID: networkID,
 		NodeName:  nodeName,
 	}
+	log.Info(c)
 	return Zerotier{
 		config: c,
 		executable: ZTExecutable{
@@ -48,18 +51,22 @@ func NewClient(token, networkID, nodeName string) (Zerotier, error) {
 func (zt Zerotier) Ensure() error {
 	err := zt.join()
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 	node, err := zt.getNodeID()
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 	err = zt.authorize(node)
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 	err = zt.updateMemberName(node)
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -104,7 +111,7 @@ func (zt Zerotier) authorize(node string) error {
 	if err != nil {
 		return err
 	}
-	_, err = zt.executable.req("POST", fmt.Sprintf("/network/%s/member/%s", zt.config.NetworkID, node), params)
+	_, err = zt.executable.req("POST", fmt.Sprintf("/api/network/%s/member/%s", zt.config.NetworkID, node), params)
 	return err
 }
 func (zt Zerotier) getNodeID() (string, error) {
@@ -116,6 +123,7 @@ func (zt Zerotier) getNodeID() (string, error) {
 }
 
 func (e ZTExecutable) exec(cmd string) ([]byte, error) {
+	log.Infof("exec command: %s", cmd)
 	return exec.Command("zerotier-cli", cmd).Output()
 }
 func (zt Zerotier) get(url string) ([]byte, error) {
@@ -125,6 +133,7 @@ func (zt Zerotier) post(url string, params []byte) ([]byte, error) {
 	return zt.executable.req("POST", url, params)
 }
 func (e ZTExecutable) req(method, url string, params []byte) ([]byte, error) {
+	log.Infof("req: %s", url)
 	client := &http.Client{}
 	client.Timeout = time.Second * 30
 	uri := e.config.Endpoint + url
@@ -141,6 +150,7 @@ func (e ZTExecutable) req(method, url string, params []byte) ([]byte, error) {
 	req.Header.Set("Authorization", "bearer "+e.config.Token)
 	req.Header.Set("Content-type", "application/json")
 	resp, err := client.Do(req)
+	log.Infof("response status code: %d", resp.StatusCode)
 	if err != nil {
 		return []byte{}, err
 	}

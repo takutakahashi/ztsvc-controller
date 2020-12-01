@@ -5,6 +5,7 @@ go 1.14
 require (
 	fortio.org/fortio v1.11.3
 	github.com/labstack/gommon v0.3.0
+	github.com/prometheus/common v0.15.0 // indirect
 	github.com/takutakahashi/container-api-gateway v0.0.0-20201020082214-7e3fe098ca6e // indirect
 	github.com/urfave/cli v1.22.5
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56

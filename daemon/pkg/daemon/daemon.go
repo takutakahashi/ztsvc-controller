@@ -3,6 +3,7 @@ package daemon
 import (
 	"time"
 
+	"github.com/labstack/gommon/log"
 	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/zerotier"
 )
 
@@ -21,7 +22,7 @@ func NewConfig(token, networkID, nodeName string) (Config, error) {
 }
 
 func NewDaemon(c Config) (NetworkDaemon, error) {
-	return NetworkDaemon{}, nil
+	return NetworkDaemon{config: c}, nil
 }
 
 func (d NetworkDaemon) Start() error {
@@ -33,9 +34,11 @@ func (d NetworkDaemon) start() error {
 	if err != nil {
 		return err
 	}
+	log.Info("daemon start")
 	for {
 		err = zt.Ensure()
 		if err != nil {
+			log.Error(err)
 			return err
 		}
 		time.Sleep(10 * time.Second)
