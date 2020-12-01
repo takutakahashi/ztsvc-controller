@@ -23,18 +23,19 @@ func (e ExecutableMock) exec(cmd string) ([]byte, error) {
 		return nil, errors.New("error")
 	}
 }
+func Mock() Zerotier {
+	network := "0000000000000000"
+	nodeName := "node"
+
+	zt, _ := NewClient("", network, nodeName)
+	return zt
+}
 
 func TestRequest(t *testing.T) {
-	network := "0000000000000000"
 	node := "0000000000"
-
-	zt, err := NewClient("", network)
-
+	zt := Mock()
 	zt.executable = ExecutableMock{}
-	if err != nil {
-		t.Fatal("error", err)
-	}
-	err = zt.join()
+	err := zt.join()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,8 +43,16 @@ func TestRequest(t *testing.T) {
 	if err != nil || nodeID != node {
 		t.Fatalf("expected: %s, actual: %s", node, nodeID)
 	}
-	err = zt.updateMemberName(node, "node01")
+	err = zt.updateMemberName(node)
 	if err != nil {
 		t.Fatal("error", err)
+	}
+}
+func TestEnsure(t *testing.T) {
+	zt := Mock()
+	zt.executable = ExecutableMock{}
+	err := zt.Ensure()
+	if err != nil {
+		t.Fatal(err)
 	}
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -28,13 +27,15 @@ type Config struct {
 	Token     string
 	Endpoint  string
 	NetworkID string
+	NodeName  string
 }
 
-func NewClient(token, networkID string) (Zerotier, error) {
+func NewClient(token, networkID, nodeName string) (Zerotier, error) {
 	c := Config{
 		Token:     token,
 		Endpoint:  "https://my.zerotier.com",
 		NetworkID: networkID,
+		NodeName:  nodeName,
 	}
 	return Zerotier{
 		config: c,
@@ -57,7 +58,7 @@ func (zt Zerotier) Ensure() error {
 	if err != nil {
 		return err
 	}
-	err = zt.updateMemberName(node, os.Getenv("HOSTNAME"))
+	err = zt.updateMemberName(node)
 	if err != nil {
 		return err
 	}
@@ -69,10 +70,10 @@ func (zt Zerotier) getMembers(network string) (string, error) {
 	b, err := zt.get("/api/network/" + network + "/member")
 	return string(b), err
 }
-func (zt Zerotier) updateMemberName(memberID, name string) error {
+func (zt Zerotier) updateMemberName(memberID string) error {
 	p := struct {
 		Name string `json:"name"`
-	}{Name: name}
+	}{Name: zt.config.NodeName}
 	params, err := json.Marshal(p)
 	if err != nil {
 		return err

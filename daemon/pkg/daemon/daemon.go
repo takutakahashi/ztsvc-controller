@@ -13,10 +13,11 @@ type NetworkDaemon struct {
 type Config struct {
 	token     string
 	networkID string
+	nodeName  string
 }
 
-func NewConfig(token, networkID string) (Config, error) {
-	return Config{token: token, networkID: networkID}, nil
+func NewConfig(token, networkID, nodeName string) (Config, error) {
+	return Config{token: token, networkID: networkID, nodeName: nodeName}, nil
 }
 
 func NewDaemon(c Config) (NetworkDaemon, error) {
@@ -28,7 +29,7 @@ func (d NetworkDaemon) Start() error {
 }
 
 func (d NetworkDaemon) start() error {
-	zt, err := zerotier.NewClient(d.config.token, d.config.networkID)
+	zt, err := zerotier.NewClient(d.config.token, d.config.networkID, d.config.nodeName)
 	if err != nil {
 		return err
 	}

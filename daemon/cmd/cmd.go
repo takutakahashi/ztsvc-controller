@@ -23,6 +23,10 @@ func main() {
 			Name:  "networkID, n",
 			Usage: "Zerotier Network ID",
 		},
+		cli.StringFlag{
+			Name:  "name",
+			Usage: "Zerotier Member name",
+		},
 	}
 	app.Action = action
 	app.Run(os.Args)
@@ -39,7 +43,12 @@ func action(c *cli.Context) error {
 		cli.ShowAppHelp(c)
 		return nil
 	}
-	config, err := daemon.NewConfig(token, networkID)
+	nodeName := c.String("name")
+	if nodeName == "" {
+		cli.ShowAppHelp(c)
+		return nil
+	}
+	config, err := daemon.NewConfig(token, networkID, nodeName)
 	if err != nil {
 		log.Fatal(err)
 		return nil
