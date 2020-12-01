@@ -27,7 +27,9 @@ func (e ExecutableMock) exec(cmd string) ([]byte, error) {
 func TestRequest(t *testing.T) {
 	network := "0000000000000000"
 	node := "0000000000"
+
 	zt, err := NewClient("")
+
 	zt.executable = ExecutableMock{}
 	if err != nil {
 		t.Fatal("error", err)

@@ -9,8 +9,6 @@ import (
 	"os/exec"
 	"strings"
 	"time"
-
-	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/node"
 )
 
 type Zerotier struct {
@@ -38,11 +36,6 @@ func NewClient(token string) (Zerotier, error) {
 			},
 		},
 	}, nil
-}
-
-func (zt Zerotier) Ensure(node.Node) error {
-
-	return nil
 }
 
 func (zt Zerotier) getMembers(network string) (string, error) {

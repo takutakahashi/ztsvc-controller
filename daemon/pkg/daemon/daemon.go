@@ -3,7 +3,6 @@ package daemon
 import (
 	"time"
 
-	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/node"
 	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/zerotier"
 )
 
@@ -28,19 +27,11 @@ func (d NetworkDaemon) Start() error {
 }
 
 func (d NetworkDaemon) start() error {
-	zt, err := zerotier.NewClient(d.config.token)
+	_, err := zerotier.NewClient(d.config.token)
 	if err != nil {
 		return err
 	}
 	for {
-		n, err := node.Fetch()
-		if err != nil {
-			return err
-		}
-		err = zt.Ensure(n)
-		if err != nil {
-			return err
-		}
 		time.Sleep(10 * time.Second)
 	}
 }
