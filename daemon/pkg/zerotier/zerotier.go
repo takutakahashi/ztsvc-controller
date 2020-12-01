@@ -39,7 +39,6 @@ func NewClient(token, networkID, nodeName string) (Zerotier, error) {
 		NetworkID: networkID,
 		NodeName:  nodeName,
 	}
-	log.Info(c)
 	return Zerotier{
 		config: c,
 		executable: ZTExecutable{
