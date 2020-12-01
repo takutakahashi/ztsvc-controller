@@ -19,6 +19,10 @@ func main() {
 			Name:  "token, t",
 			Usage: "Zerotier API Token",
 		},
+		cli.StringFlag{
+			Name:  "networkID, n",
+			Usage: "Zerotier Network ID",
+		},
 	}
 	app.Action = action
 	app.Run(os.Args)
@@ -30,7 +34,12 @@ func action(c *cli.Context) error {
 		cli.ShowAppHelp(c)
 		return nil
 	}
-	config, err := daemon.NewConfig(token)
+	networkID := c.String("networkID")
+	if networkID == "" {
+		cli.ShowAppHelp(c)
+		return nil
+	}
+	config, err := daemon.NewConfig(token, networkID)
 	if err != nil {
 		log.Fatal(err)
 		return nil

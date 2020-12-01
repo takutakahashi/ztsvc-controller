@@ -28,13 +28,13 @@ func TestRequest(t *testing.T) {
 	network := "0000000000000000"
 	node := "0000000000"
 
-	zt, err := NewClient("")
+	zt, err := NewClient("", network)
 
 	zt.executable = ExecutableMock{}
 	if err != nil {
 		t.Fatal("error", err)
 	}
-	err = zt.join(network)
+	err = zt.join()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func TestRequest(t *testing.T) {
 	if err != nil || nodeID != node {
 		t.Fatalf("expected: %s, actual: %s", node, nodeID)
 	}
-	err = zt.updateMemberName(network, node, "node01")
+	err = zt.updateMemberName(node, "node01")
 	if err != nil {
 		t.Fatal("error", err)
 	}

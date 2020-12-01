@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 
 type Zerotier struct {
 	executable Executable
+	config     Config
 }
 type Executable interface {
 	req(method, url string, params []byte) ([]byte, error)
@@ -23,19 +25,43 @@ type ZTExecutable struct {
 }
 
 type Config struct {
-	Token    string
-	Endpoint string
+	Token     string
+	Endpoint  string
+	NetworkID string
 }
 
-func NewClient(token string) (Zerotier, error) {
+func NewClient(token, networkID string) (Zerotier, error) {
+	c := Config{
+		Token:     token,
+		Endpoint:  "https://my.zerotier.com",
+		NetworkID: networkID,
+	}
 	return Zerotier{
+		config: c,
 		executable: ZTExecutable{
-			config: Config{
-				Token:    token,
-				Endpoint: "https://my.zerotier.com",
-			},
+			config: c,
 		},
 	}, nil
+}
+
+func (zt Zerotier) Ensure() error {
+	err := zt.join()
+	if err != nil {
+		return err
+	}
+	node, err := zt.getNodeID()
+	if err != nil {
+		return err
+	}
+	err = zt.authorize(node)
+	if err != nil {
+		return err
+	}
+	err = zt.updateMemberName(node, os.Getenv("HOSTNAME"))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (zt Zerotier) getMembers(network string) (string, error) {
@@ -43,7 +69,7 @@ func (zt Zerotier) getMembers(network string) (string, error) {
 	b, err := zt.get("/api/network/" + network + "/member")
 	return string(b), err
 }
-func (zt Zerotier) updateMemberName(network, memberID, name string) error {
+func (zt Zerotier) updateMemberName(memberID, name string) error {
 	p := struct {
 		Name string `json:"name"`
 	}{Name: name}
@@ -51,20 +77,22 @@ func (zt Zerotier) updateMemberName(network, memberID, name string) error {
 	if err != nil {
 		return err
 	}
-	_, err = zt.post("/api/network/"+network+"/member/"+memberID, params)
+	_, err = zt.post("/api/network/"+zt.config.NetworkID+"/member/"+memberID, params)
 	return err
 }
-func (zt Zerotier) join(network string) error {
+func (zt Zerotier) join() error {
+	network := zt.config.NetworkID
 	_, err := zt.executable.exec(fmt.Sprintf("join %s", network))
 	return err
 }
 
-func (zt Zerotier) leave(network string) error {
+func (zt Zerotier) leave() error {
+	network := zt.config.NetworkID
 	_, err := zt.executable.exec(fmt.Sprintf("leave %s", network))
 	return err
 }
 
-func (zt Zerotier) authorize(network, node string) error {
+func (zt Zerotier) authorize(node string) error {
 	type c struct {
 		Authorized bool `json:"authorized"`
 	}
@@ -75,7 +103,7 @@ func (zt Zerotier) authorize(network, node string) error {
 	if err != nil {
 		return err
 	}
-	_, err = zt.executable.req("POST", fmt.Sprintf("/network/%s/member/%s", network, node), params)
+	_, err = zt.executable.req("POST", fmt.Sprintf("/network/%s/member/%s", zt.config.NetworkID, node), params)
 	return err
 }
 func (zt Zerotier) getNodeID() (string, error) {
