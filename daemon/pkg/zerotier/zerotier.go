@@ -19,7 +19,7 @@ type Zerotier struct {
 }
 type Executable interface {
 	req(method, url string, params []byte) ([]byte, error)
-	exec(cmd string) ([]byte, error)
+	exec(cmd []string) ([]byte, error)
 }
 type ZTExecutable struct {
 	config Config
@@ -72,6 +72,10 @@ func (zt Zerotier) Ensure() error {
 	return nil
 }
 
+func (zt Zerotier) Stop() error {
+	return zt.leave()
+}
+
 func (zt Zerotier) getMembers(network string) (string, error) {
 
 	b, err := zt.get("/api/network/" + network + "/member")
@@ -90,13 +94,13 @@ func (zt Zerotier) updateMemberName(memberID string) error {
 }
 func (zt Zerotier) join() error {
 	network := zt.config.NetworkID
-	_, err := zt.executable.exec(fmt.Sprintf("join %s", network))
+	_, err := zt.executable.exec([]string{"join", network})
 	return err
 }
 
 func (zt Zerotier) leave() error {
 	network := zt.config.NetworkID
-	_, err := zt.executable.exec(fmt.Sprintf("leave %s", network))
+	_, err := zt.executable.exec([]string{"leave", network})
 	return err
 }
 
@@ -115,16 +119,19 @@ func (zt Zerotier) authorize(node string) error {
 	return err
 }
 func (zt Zerotier) getNodeID() (string, error) {
-	stdout, err := zt.executable.exec("info")
+	stdout, err := zt.executable.exec([]string{"info"})
 	if err != nil {
 		return "", err
 	}
 	return strings.Split(string(stdout), " ")[2], nil
 }
 
-func (e ZTExecutable) exec(cmd string) ([]byte, error) {
+func (e ZTExecutable) exec(cmd []string) ([]byte, error) {
 	log.Infof("exec command: %s", cmd)
-	return exec.Command("zerotier-cli", cmd).Output()
+	out, err := exec.Command("zerotier-cli", cmd...).Output()
+	log.Info(string(out))
+	log.Info(err)
+	return out, err
 }
 func (zt Zerotier) get(url string) ([]byte, error) {
 	return zt.executable.req("GET", url, nil)

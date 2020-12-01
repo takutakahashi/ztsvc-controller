@@ -1,7 +1,9 @@
 package daemon
 
 import (
-	"time"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/labstack/gommon/log"
 	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/zerotier"
@@ -30,17 +32,28 @@ func (d NetworkDaemon) Start() error {
 }
 
 func (d NetworkDaemon) start() error {
+	sigs := make(chan os.Signal, 1)
+	done := make(chan error, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	zt, err := zerotier.NewClient(d.config.token, d.config.networkID, d.config.nodeName)
 	if err != nil {
 		return err
 	}
 	log.Info("daemon start")
-	for {
-		err = zt.Ensure()
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-		time.Sleep(10 * time.Second)
+	err = zt.Ensure()
+	if err != nil {
+		log.Error(err)
+		return err
 	}
+	go func() {
+		sig := <-sigs
+		log.Info(sig)
+		log.Info("terminating")
+		err := zt.Stop()
+		if err != nil {
+			log.Errorf("can't leave: %s", err)
+		}
+		done <- err
+	}()
+	return <-done
 }

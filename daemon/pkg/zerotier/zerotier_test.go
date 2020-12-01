@@ -12,12 +12,12 @@ type ExecutableMock struct{}
 func (e ExecutableMock) req(method, url string, params []byte) ([]byte, error) {
 	return []byte{}, nil
 }
-func (e ExecutableMock) exec(cmd string) ([]byte, error) {
+func (e ExecutableMock) exec(cmd []string) ([]byte, error) {
 	log.Info(cmd)
-	switch cmd {
+	switch cmd[0] {
 	case "info":
 		return []byte("200 info 0000000000 1.4.6 ONLINE"), nil
-	case "join 0000000000000000":
+	case "join":
 		return []byte("OK"), nil
 	default:
 		return nil, errors.New("error")
@@ -31,23 +31,6 @@ func Mock() Zerotier {
 	return zt
 }
 
-func TestRequest(t *testing.T) {
-	node := "0000000000"
-	zt := Mock()
-	zt.executable = ExecutableMock{}
-	err := zt.join()
-	if err != nil {
-		t.Fatal(err)
-	}
-	nodeID, err := zt.getNodeID()
-	if err != nil || nodeID != node {
-		t.Fatalf("expected: %s, actual: %s", node, nodeID)
-	}
-	err = zt.updateMemberName(node)
-	if err != nil {
-		t.Fatal("error", err)
-	}
-}
 func TestEnsure(t *testing.T) {
 	zt := Mock()
 	zt.executable = ExecutableMock{}
