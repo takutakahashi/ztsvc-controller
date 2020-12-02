@@ -48,7 +48,12 @@ func NewClient(token, networkID, nodeName string) (Zerotier, error) {
 }
 
 func (zt Zerotier) Ensure() error {
-	err := zt.join()
+	err := zt.up()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	err = zt.join()
 	if err != nil {
 		log.Error(err)
 		return err
@@ -90,6 +95,10 @@ func (zt Zerotier) updateMemberName(memberID string) error {
 	}
 	_, err = zt.post("/api/network/"+zt.config.NetworkID+"/member/"+memberID, params)
 	return err
+}
+
+func (zt Zerotier) up() error {
+	return exec.Command("/usr/sbin/zerotier-one", "-d").Start()
 }
 func (zt Zerotier) join() error {
 	network := zt.config.NetworkID
