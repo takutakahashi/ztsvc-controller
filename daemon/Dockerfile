@@ -14,4 +14,5 @@ RUN apt update && apt install -y curl gpg
 RUN curl -s https://install.zerotier.com | bash
 RUN rm -f /var/lib/zerotier-one/authtoken.secret /var/lib/zerotier-one/identity.* /var/lib/zerotier-one/peers.d/*
 COPY --from=build /go/src/dist/daemon /bin/ztdaemon
-ENTRYPOINT ["/bin/ztdaemon"]
+COPY ./entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
