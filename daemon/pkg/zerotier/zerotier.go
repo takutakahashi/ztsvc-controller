@@ -98,7 +98,8 @@ func (zt Zerotier) updateMemberName(memberID string) error {
 }
 
 func (zt Zerotier) up() error {
-	return exec.Command("/usr/sbin/zerotier-one", "-d").Start()
+	_, err := exec.Command("/usr/sbin/zerotier-one", "-d").Output()
+	return err
 }
 func (zt Zerotier) join() error {
 	network := zt.config.NetworkID
