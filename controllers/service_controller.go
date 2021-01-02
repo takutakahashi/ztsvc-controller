@@ -45,14 +45,12 @@ func (r *ServiceReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err != nil {
 		return ctrl.Result{}, nil
 	}
-	if _, ok := svc.Annotations[router.AnnotaionZtService]; !ok {
+	if _, ok := svc.Annotations[router.AnnotaionZtServiceEnable]; !ok {
 		return ctrl.Result{}, nil
 	}
 	l.Info("start reconcilation", "target", svc)
-	router := router.BuildDeployment(svc)
-	_ = router
-
-	return ctrl.Result{}, nil
+	err = router.BuildResources(svc)
+	return ctrl.Result{}, err
 }
 
 func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
