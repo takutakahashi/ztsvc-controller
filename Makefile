@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= takutakahashi/ztsvc-controller:v0.1
+IMG ?= takutakahashi/ztsvc-controller:v0.1.3
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
