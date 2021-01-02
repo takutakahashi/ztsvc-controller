@@ -16,8 +16,10 @@ jobs:
       - name: Build manifests
         run: |
           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-          make release IMG=takutakahashi/ztsvc-controller:${{ github.ref }}
+          make release IMG=takutakahashi/ztsvc-controller:${GITHUB_REF#refs/tags/}
       - name: Create Release
+:q
+
         id: create_release
         uses: actions/create-release@v1
         env:
