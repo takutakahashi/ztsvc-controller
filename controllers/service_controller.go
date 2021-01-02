@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
+	"github.com/takutakahashi/ztsvc-controller/pkg/router"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,14 +36,22 @@ type ServiceReconciler struct {
 
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=services/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core,resources=configmaps,verbs=list;get;create;update;patch;delete
 
 func (r *ServiceReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("service", req.NamespacedName)
-
-	// your logic here
-
-	return ctrl.Result{}, nil
+	ctx := context.Background()
+	l := r.Log.WithValues("service", req.NamespacedName)
+	svc := corev1.Service{}
+	err := r.Get(ctx, req.NamespacedName, &svc)
+	if err != nil {
+		return ctrl.Result{}, nil
+	}
+	if _, ok := svc.Annotations[router.AnnotaionZtServiceEnable]; !ok {
+		return ctrl.Result{}, nil
+	}
+	l.Info("start reconcilation", "target", svc)
+	err = router.BuildResources(svc)
+	return ctrl.Result{}, err
 }
 
 func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
