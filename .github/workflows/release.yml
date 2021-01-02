@@ -18,8 +18,6 @@ jobs:
           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
           make release IMG=takutakahashi/ztsvc-controller:${GITHUB_REF#refs/tags/}
       - name: Create Release
-:q
-
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -38,4 +36,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./release.yaml
           asset_name: release.yaml
-          asset_content_type: text/plain
+          asset_content_type: application/x-yaml
