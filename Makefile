@@ -38,6 +38,10 @@ deploy: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/default | kubectl apply -f -
 
+release: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/default
+
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
@@ -78,3 +82,9 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+kubebuilder:
+	os=$(shell go env GOOS)
+	arch=$(shell go env GOARCH)
+	curl -L https://go.kubebuilder.io/dl/2.3.1/$(os)/$(arch) | tar -xz -C /tmp/
+	mv /tmp/kubebuilder_2.3.1_$(os)_$(arch) /usr/local/kubebuilder
