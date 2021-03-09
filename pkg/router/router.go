@@ -135,7 +135,7 @@ func BuildDeployment(clientset *kubernetes.Clientset, svc corev1.Service) appsv1
 						},
 						{
 							Name:  "zt",
-							Image: "takutakahashi/zerotier-node-daemon",
+							Image: "takutakahashi/zerotier-node-daemon:v0.2.1",
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: &priviledged,
 							},
