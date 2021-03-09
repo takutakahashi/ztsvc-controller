@@ -48,6 +48,7 @@ func NewClient(token, networkID, nodeName string) (Zerotier, error) {
 }
 
 func (zt Zerotier) Ensure() error {
+
 	err := zt.join()
 	if err != nil {
 		log.Error(err)
@@ -72,11 +73,20 @@ func (zt Zerotier) Ensure() error {
 }
 
 func (zt Zerotier) Stop() error {
-	return zt.leave()
+	node, err := zt.getNodeID()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	err = zt.leave()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return zt.deleteMember(node)
 }
 
 func (zt Zerotier) getMembers(network string) (string, error) {
-
 	b, err := zt.get("/api/network/" + network + "/member")
 	return string(b), err
 }
@@ -89,6 +99,11 @@ func (zt Zerotier) updateMemberName(memberID string) error {
 		return err
 	}
 	_, err = zt.post("/api/network/"+zt.config.NetworkID+"/member/"+memberID, params)
+	return err
+}
+
+func (zt Zerotier) deleteMember(memberID string) error {
+	_, err := zt.delete(fmt.Sprintf("/api/network/%s/member/%s", zt.config.NetworkID, memberID), nil)
 	return err
 }
 
@@ -138,6 +153,9 @@ func (zt Zerotier) get(url string) ([]byte, error) {
 }
 func (zt Zerotier) post(url string, params []byte) ([]byte, error) {
 	return zt.executable.req("POST", url, params)
+}
+func (zt Zerotier) delete(url string, params []byte) ([]byte, error) {
+	return zt.executable.req("DELETE", url, params)
 }
 func (e ZTExecutable) req(method, url string, params []byte) ([]byte, error) {
 	log.Infof("req: %s", url)
