@@ -3,6 +3,7 @@ package zerotier
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -30,6 +31,30 @@ type Config struct {
 	Endpoint  string
 	NetworkID string
 	NodeName  string
+}
+
+type Member struct {
+	Hidden      bool         `json:"hidden"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Config      MemberConfig `json:"config"`
+}
+
+type MemberConfig struct {
+	ActiveBridge    bool     `json:"activeBridge"`
+	Authorized      bool     `json:"authorized"`
+	Capabilities    []int    `json:"capabilities"`
+	ID              string   `json:"id"`
+	Identity        string   `json:"identity"`
+	IPAssignments   []string `json:"ipAssignments"`
+	NoAutoAssignIps bool     `json:"noAutoAssignIps"`
+	Revision        int      `json:"revision"`
+	Tags            [][]int  `json:"tags"`
+}
+
+type Node struct {
+	Name string
+	IP   string
 }
 
 func NewClient(token, networkID, nodeName string) (Zerotier, error) {
@@ -72,6 +97,15 @@ func (zt Zerotier) Ensure() error {
 	return nil
 }
 
+func (zt Zerotier) GetNodeInfo() (Node, error) {
+	name := zt.config.NodeName
+	ip, err := zt.getMemberIP()
+	if err != nil {
+		return Node{}, err
+	}
+	return Node{Name: name, IP: ip}, nil
+}
+
 func (zt Zerotier) Stop() error {
 	node, err := zt.getNodeID()
 	if err != nil {
@@ -90,6 +124,25 @@ func (zt Zerotier) getMembers(network string) (string, error) {
 	b, err := zt.get("/api/network/" + network + "/member")
 	return string(b), err
 }
+
+func (zt Zerotier) getMemberIP() (string, error) {
+	node, err := zt.getNodeID()
+	if err != nil {
+		return "", err
+	}
+	buf, err := zt.get(fmt.Sprintf("/api/network/%s/member/%s", zt.config.NetworkID, node))
+	log.Info(string(buf))
+	member := Member{}
+	err = json.Unmarshal(buf, &member)
+	if err != nil {
+		return "", err
+	}
+	if member.Config.IPAssignments == nil || len(member.Config.IPAssignments) == 0 {
+		return "", errors.New("IP was not found")
+	}
+	return member.Config.IPAssignments[0], nil
+}
+
 func (zt Zerotier) updateMemberName(memberID string) error {
 	p := struct {
 		Name string `json:"name"`
