@@ -31,6 +31,7 @@ type Config struct {
 	Endpoint  string
 	NetworkID string
 	NodeName  string
+	Domain    string
 }
 
 type Member struct {
@@ -53,16 +54,18 @@ type MemberConfig struct {
 }
 
 type Node struct {
-	Name string
-	IP   string
+	Name   string
+	IP     string
+	Domain string
 }
 
-func NewClient(token, networkID, nodeName string) (Zerotier, error) {
+func NewClient(token, networkID, nodeName, domain string) (Zerotier, error) {
 	c := Config{
 		Token:     token,
 		Endpoint:  "https://my.zerotier.com",
 		NetworkID: networkID,
 		NodeName:  nodeName,
+		Domain:    domain,
 	}
 	return Zerotier{
 		config: c,
@@ -103,7 +106,7 @@ func (zt Zerotier) GetNodeInfo() (Node, error) {
 	if err != nil {
 		return Node{}, err
 	}
-	return Node{Name: name, IP: ip}, nil
+	return Node{Name: name, IP: ip, Domain: zt.config.Domain}, nil
 }
 
 func (zt Zerotier) Stop() error {

@@ -16,6 +16,7 @@ import (
 
 var AnnotaionZtServiceEnable string = "zerotier.takutakahashi.dev/enable"
 var AnnotaionZtServiceSecret string = "zerotier.takutakahashi.dev/configuration-secret"
+var AnnotaionZtServiceHostname string = "zerotier.takutakahashi.dev/hostname"
 
 func BuildResources(svc corev1.Service) error {
 	config := ctrl.GetConfigOrDie()
@@ -120,7 +121,8 @@ func BuildDeployment(clientset *kubernetes.Clientset, svc corev1.Service) appsv1
 							},
 						},
 					},
-					InitContainers: []corev1.Container{},
+					InitContainers:     []corev1.Container{},
+					ServiceAccountName: "ztsvc-node-daemon",
 					Containers: []corev1.Container{
 						{
 							Name:  "proxy",
@@ -135,11 +137,19 @@ func BuildDeployment(clientset *kubernetes.Clientset, svc corev1.Service) appsv1
 						},
 						{
 							Name:  "zt",
-							Image: "takutakahashi/zerotier-node-daemon:v0.2.1",
+							Image: "takutakahashi/zerotier-node-daemon:test",
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: &priviledged,
 							},
 							Env: []corev1.EnvVar{
+								{
+									Name:  "NAMESPACE",
+									Value: svc.Namespace,
+								},
+								{
+									Name:  "DOMAIN",
+									Value: svc.Annotations[AnnotaionZtServiceHostname],
+								},
 								{
 									Name:  "NODE_NAME",
 									Value: svc.Name,
