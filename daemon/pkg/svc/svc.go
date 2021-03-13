@@ -41,6 +41,7 @@ func Ensure(node zerotier.Node, namespace string) error {
 	} else if err != nil {
 		return err
 	}
-	_, err = sc.Update(context.TODO(), s, metav1.UpdateOptions{})
+	s.Spec.ExternalName = node.IP
+	_, err = sc.Update(context.TODO(), s.DeepCopy(), metav1.UpdateOptions{})
 	return err
 }
