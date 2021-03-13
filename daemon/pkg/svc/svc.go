@@ -29,6 +29,7 @@ func Ensure(node zerotier.Node, namespace string) error {
 				Namespace: namespace,
 				Annotations: map[string]string{
 					"external-dns.alpha.kubernetes.io/hostname": node.Domain,
+					"external-dns.alpha.kubernetes.io/ttl":      "10",
 				},
 			},
 			Spec: v1.ServiceSpec{
