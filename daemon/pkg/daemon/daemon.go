@@ -4,8 +4,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/labstack/gommon/log"
+	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/svc"
 	"github.com/takutakahashi/ztsvc-controller-daemon/pkg/zerotier"
 )
 
@@ -17,10 +19,12 @@ type Config struct {
 	token     string
 	networkID string
 	nodeName  string
+	domain    string
+	namespace string
 }
 
-func NewConfig(token, networkID, nodeName string) (Config, error) {
-	return Config{token: token, networkID: networkID, nodeName: nodeName}, nil
+func NewConfig(token, networkID, nodeName, domain, namespace string) (Config, error) {
+	return Config{token: token, networkID: networkID, nodeName: nodeName, domain: domain, namespace: namespace}, nil
 }
 
 func NewDaemon(c Config) (NetworkDaemon, error) {
@@ -35,7 +39,7 @@ func (d NetworkDaemon) start() error {
 	sigs := make(chan os.Signal, 1)
 	done := make(chan error, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	zt, err := zerotier.NewClient(d.config.token, d.config.networkID, d.config.nodeName)
+	zt, err := zerotier.NewClient(d.config.token, d.config.networkID, d.config.nodeName, d.config.domain)
 	if err != nil {
 		return err
 	}
@@ -43,7 +47,21 @@ func (d NetworkDaemon) start() error {
 	err = zt.Ensure()
 	if err != nil {
 		log.Error(err)
+		zt.Stop()
 		return err
+	}
+	time.Sleep(10 * time.Second)
+	node, err := zt.GetNodeInfo()
+	if err != nil {
+		log.Error(err)
+		zt.Stop()
+		return err
+	}
+	if node.Domain != "" {
+		err = svc.Ensure(node, d.config.namespace)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 	go func() {
 		sig := <-sigs

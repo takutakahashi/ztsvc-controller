@@ -26,8 +26,8 @@ func (e ExecutableMock) exec(cmd []string) ([]byte, error) {
 func Mock() Zerotier {
 	network := "0000000000000000"
 	nodeName := "node"
-
-	zt, _ := NewClient("", network, nodeName)
+	domain := "test.takutakahashi.dev"
+	zt, _ := NewClient("", network, nodeName, domain)
 	return zt
 }
 

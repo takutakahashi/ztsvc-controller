@@ -27,6 +27,14 @@ func main() {
 			Name:  "name",
 			Usage: "Zerotier Member name",
 		},
+		cli.StringFlag{
+			Name:  "domain",
+			Usage: "Zerotier Router domain",
+		},
+		cli.StringFlag{
+			Name:  "namespace",
+			Usage: "Zerotier Router namespace",
+		},
 	}
 	app.Action = action
 	app.Run(os.Args)
@@ -48,7 +56,10 @@ func action(c *cli.Context) error {
 		cli.ShowAppHelp(c)
 		return nil
 	}
-	config, err := daemon.NewConfig(token, networkID, nodeName)
+	domain := c.String("domain")
+	namespace := c.String("namespace")
+
+	config, err := daemon.NewConfig(token, networkID, nodeName, domain, namespace)
 	if err != nil {
 		log.Fatal(err)
 		return nil
