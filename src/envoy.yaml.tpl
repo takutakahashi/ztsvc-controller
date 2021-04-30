@@ -3,6 +3,8 @@
 {{ if eq $port.Protocol "UDP" }}
 static_resources:
   listeners:
+{{- range $i, $port := .Spec.Ports }}
+{{- if eq $port.Protocol "UDP" }}
   - name: listener_{{ $i }}
     reuse_port: true
     address:
@@ -21,8 +23,12 @@ static_resources:
         cluster: service_udp
         upstream_socket_config:
           max_rx_datagram_size: 9000
+{{- end }}
+{{- end }}
   clusters:
-  - name: service_udp
+{{- range $i, $port := .Spec.Ports }}
+{{- if eq $port.Protocol "UDP" }}
+  - name: service_udp_{{ $i }}
     connect_timeout: 0.25s
     type: STATIC
     lb_policy: ROUND_ROBIN
@@ -35,5 +41,5 @@ static_resources:
               socket_address:
                 address: {{ $svc.Name }}
                 port_value: {{ $port.Port }}
-{{ end }}
-{{ end }}
+{{- end }}
+{{- end }}
