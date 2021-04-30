@@ -66,17 +66,21 @@ func BuildConfig(svc corev1.Service) (corev1.ConfigMap, error) {
 		},
 		Data: map[string]string{},
 	}
-	fp := "./src/haproxy.cfg.tpl"
-	tmpl, err := template.New(filepath.Base(fp)).ParseFiles(fp)
-	if err != nil {
-		return cm, err
+	for k, fp := range map[string]string{
+		"haproxy.cfg": "./src/haproxy.cfg.tpl",
+		"envoy.yaml":  "./src/envoy.yaml.tpl",
+	} {
+		tmpl, err := template.New(filepath.Base(fp)).ParseFiles(fp)
+		if err != nil {
+			return cm, err
+		}
+		result := bytes.Buffer{}
+		err = tmpl.Execute(&result, svc)
+		if err != nil {
+			return cm, err
+		}
+		cm.Data[k] = result.String()
 	}
-	result := bytes.Buffer{}
-	err = tmpl.Execute(&result, svc)
-	if err != nil {
-		return cm, err
-	}
-	cm.Data["haproxy.cfg"] = result.String()
 	return cm, nil
 }
 func BuildDeployment(clientset *kubernetes.Clientset, svc corev1.Service) appsv1.Deployment {
