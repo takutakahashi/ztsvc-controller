@@ -61,7 +61,7 @@ func BuildResources(svc corev1.Service) error {
 func BuildConfig(svc corev1.Service) (corev1.ConfigMap, error) {
 	cm := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-haproxy", svc.Name),
+			Name:      fmt.Sprintf("%s-route-config", svc.Name),
 			Namespace: svc.Namespace,
 		},
 		Data: map[string]string{},
@@ -119,7 +119,7 @@ func BuildDeployment(clientset *kubernetes.Clientset, svc corev1.Service) appsv1
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: fmt.Sprintf("%s-haproxy", svc.Name),
+										Name: fmt.Sprintf("%s-router-config", svc.Name),
 									},
 								},
 							},
@@ -136,6 +136,17 @@ func BuildDeployment(clientset *kubernetes.Clientset, svc corev1.Service) appsv1
 									Name:      fmt.Sprintf("%s-config", dpname),
 									ReadOnly:  true,
 									MountPath: "/usr/local/etc/haproxy",
+								},
+							},
+						},
+						{
+							Name:  "envoy",
+							Image: "envoyproxy/envoy:v1.18-latest",
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      fmt.Sprintf("%s-config", dpname),
+									ReadOnly:  true,
+									MountPath: "/etc/envoy",
 								},
 							},
 						},
