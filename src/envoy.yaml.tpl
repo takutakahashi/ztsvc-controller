@@ -1,6 +1,4 @@
 {{ $svc := . }}
-{{ range $i, $port := .Spec.Ports }}
-{{ if eq $port.Protocol "UDP" }}
 static_resources:
   listeners:
 {{- range $i, $port := .Spec.Ports }}

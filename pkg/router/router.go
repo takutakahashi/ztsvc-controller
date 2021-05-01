@@ -61,7 +61,7 @@ func BuildResources(svc corev1.Service) error {
 func BuildConfig(svc corev1.Service) (corev1.ConfigMap, error) {
 	cm := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-route-config", svc.Name),
+			Name:      fmt.Sprintf("%s-router-config", svc.Name),
 			Namespace: svc.Namespace,
 		},
 		Data: map[string]string{},
