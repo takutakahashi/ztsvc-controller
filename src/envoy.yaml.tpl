@@ -28,7 +28,7 @@ static_resources:
 {{- if eq $port.Protocol "UDP" }}
   - name: service_udp_{{ $i }}
     connect_timeout: 0.25s
-    type: STATIC
+    type: LOGICAL_DNS
     lb_policy: ROUND_ROBIN
     load_assignment:
       cluster_name: service_udp_{{ $i }}
