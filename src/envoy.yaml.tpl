@@ -18,7 +18,7 @@ static_resources:
       typed_config:
         '@type': type.googleapis.com/envoy.extensions.filters.udp.udp_proxy.v3.UdpProxyConfig
         stat_prefix: service
-        cluster: service_udp
+        cluster: service_udp_{{ $i }}
         upstream_socket_config:
           max_rx_datagram_size: 9000
 {{- end }}
@@ -31,7 +31,7 @@ static_resources:
     type: STATIC
     lb_policy: ROUND_ROBIN
     load_assignment:
-      cluster_name: service_udp
+      cluster_name: service_udp_{{ $i }}
       endpoints:
       - lb_endpoints:
         - endpoint:
